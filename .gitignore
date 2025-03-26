@@ -1,0 +1,15 @@
+# OS Files
+.DS_Store
+
+# Build
+/build/
+*.o
+*.out
+
+# Secrets
+backend/db/db_config.json
+.env
+
+# Node (for frontend later)
+node_modules/
+dist/
