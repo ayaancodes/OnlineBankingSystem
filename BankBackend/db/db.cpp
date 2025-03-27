@@ -1,4 +1,4 @@
-#include "../include/db.hpp"
+#include "../db/db.hpp"
 #include <iostream>
 
 // Constructor / Destructor remain the same:
@@ -153,30 +153,26 @@ bool DB::withdraw(int userId, double amount) {
 }
 
 // 5) (Optional) Return list of transactions as strings
-std::vector<std::string> DB::getTransactions(int userId) {
-    std::vector<std::string> results;
-    if (!isConnected()) return results;
+std::vector<Transaction> DB::getTransactions(int userId) {
+    std::vector<Transaction> transactions;
+    if (!isConnected()) return transactions;
 
     try {
         pqxx::work txn(*conn);
         pqxx::result r = txn.exec_params(
-            "SELECT id, amount, type, timestamp FROM transactions WHERE user_id = $1 ORDER BY id",
+            "SELECT id, user_id, amount, type, timestamp FROM transactions WHERE user_id = $1 ORDER BY id",
             userId
         );
 
         for (auto row : r) {
-            int txId        = row["id"].as<int>();
-            double amount   = row["amount"].as<double>();
-            std::string type = row["type"].as<std::string>();
-            std::string ts   = row["timestamp"].c_str();
-
-            // Build a simple string
-            std::string entry = 
-                "TX #" + std::to_string(txId) + 
-                " | " + type + 
-                " | " + std::to_string(amount) + 
-                " | " + ts;
-            results.push_back(entry);
+            Transaction tx(
+                row["id"].as<int>(),
+                row["user_id"].as<int>(),
+                row["amount"].as<double>(),
+                row["type"].as<std::string>(),
+                row["timestamp"].c_str()
+            );
+            transactions.push_back(tx);
         }
 
         txn.commit();
@@ -184,5 +180,5 @@ std::vector<std::string> DB::getTransactions(int userId) {
         std::cerr << "❌ getTransactions Error: " << e.what() << std::endl;
     }
 
-    return results;
+    return transactions;
 }

@@ -1,14 +1,20 @@
+# BankBackend/Makefile
+
+# Use g++ as the compiler
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -I/opt/homebrew/Cellar/libpqxx/7.10.0/include
-LDFLAGS = -L/opt/homebrew/opt/libpqxx/lib -L/opt/homebrew/opt/libpq/lib -lpqxx -lpq
+# Use C++17, enable warnings and add pkg-config cflags for libpqxx
+CXXFLAGS = -std=c++17 -Wall $(shell pkg-config --cflags libpqxx)
+# Get the required libraries from pkg-config for libpqxx
+LDLIBS = $(shell pkg-config --libs libpqxx)
 
-TARGET = dbtest
-SRC = main.cpp src/db.cpp
+# List of test executables to build
+TESTS = create_user_test deposit_test get_transactions_test withdraw_test
 
-all: $(TARGET)
+all: $(TESTS)
 
-$(TARGET): $(SRC)
-	$(CXX) $(CXXFLAGS) $(SRC) -o $(TARGET) $(LDFLAGS)
-
+# Build create_user_test
+create_user_test: tests/create_user_test.cpp db/db.cpp models/user.cpp models/transaction.cpp
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDLIBS)
+	
 clean:
-	rm -f $(TARGET)
+	rm -f $(TESTS)

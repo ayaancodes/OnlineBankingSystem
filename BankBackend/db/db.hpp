@@ -4,6 +4,7 @@
 #include <pqxx/pqxx>
 #include <string>
 #include <vector>
+#include "../models/transaction.hpp"  // add this
 
 class DB {
 private:
@@ -30,7 +31,7 @@ public:
 
     // 5) (Optional) Transaction history
     // We'll store data in a struct or just return text for now
-    std::vector<std::string> getTransactions(int userId);
+std::vector<Transaction> getTransactions(int userId);
 };
 
 #endif
