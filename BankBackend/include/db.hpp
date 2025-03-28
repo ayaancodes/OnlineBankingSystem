@@ -4,7 +4,7 @@
 #include <pqxx/pqxx>
 #include <string>
 #include <vector>
-#include "../models/transaction.hpp"  // add this
+#include "../src/models/transaction.hpp" 
 
 class DB {
 private:

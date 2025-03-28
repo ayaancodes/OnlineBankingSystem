@@ -60,6 +60,9 @@
         "concepts": "cpp",
         "memory": "cpp",
         "type_traits": "cpp",
-        "algorithm": "cpp"
+        "algorithm": "cpp",
+        "*.ipp": "cpp",
+        "thread": "cpp",
+        "text_encoding": "cpp"
     }
 }

@@ -1,0 +1,35 @@
+cmake_minimum_required(VERSION 3.15)
+project(OnlineBankingSystem)
+
+set(CMAKE_CXX_STANDARD 17)
+
+# Enable pkg-config
+find_package(PkgConfig REQUIRED)
+
+# Use pkg-config to get the flags for libpqxx
+pkg_check_modules(PQXX REQUIRED libpqxx)
+
+# Boost
+find_package(Boost REQUIRED COMPONENTS system thread)
+include_directories(${Boost_INCLUDE_DIRS})
+
+# PostgreSQL and libpqxx
+include_directories(${PQXX_INCLUDE_DIRS})
+link_directories(${PQXX_LIBRARY_DIRS})
+
+# Include headers
+include_directories(BankBackend/include)
+
+# Define executable
+add_executable(server
+    BankBackend/src/server.cpp
+    BankBackend/src/db.cpp
+    BankBackend/src/models/transaction.cpp
+    BankBackend/src/routes/handlers.cpp
+)
+
+# Link libraries
+target_link_libraries(server
+    ${Boost_LIBRARIES}
+    ${PQXX_LIBRARIES}
+)
