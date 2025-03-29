@@ -28,6 +28,7 @@ The system is written in C++17 and communicates with a PostgreSQL database via t
 - Performing deposits and withdrawals
 - Logging and retrieving transaction histories
 - Unit testing of each core functionality
+- Running a multithreaded HTTP server on port 8080 using Boost.Beast
 
 ---
 
@@ -35,25 +36,23 @@ The system is written in C++17 and communicates with a PostgreSQL database via t
 
 ```
 OnlineBankingSystem/
-└── BankBackend/
-    ├── Makefile                # Build rules for core and tests
-    ├── db/
-    │   ├── db.cpp             # Database operations
-    │   └── db.hpp             # DB class interface
-    ├── include/               # (Optional) Shared headers
-    ├── main.cpp               # CLI entry point for app testing
-    ├── models/
-    │   ├── user.cpp           # User logic (if needed)
-    │   ├── user.hpp           # User model definition
-    │   ├── transaction.cpp    # Transaction logic (optional)
-    │   └── transaction.hpp    # Transaction model definition
-    ├── schema.sql             # SQL file for DB initialization
-    ├── src/                   # (Unused or expandable source dir)
-    └── tests/
-        ├── create_user_test.cpp
-        ├── deposit_test.cpp
-        ├── get_transactions_test.cpp
-        └── withdraw_test.cpp
+├── BankBackend/
+│   ├── include/
+│   │   ├── db.hpp
+│   │   └── routes/
+│   │       └── handlers.hpp
+│   ├── schema.sql
+│   └── src/
+│       ├── db.cpp
+│       ├── models/
+│       │   ├── transaction.cpp
+│       │   └── transaction.hpp
+│       ├── routes/
+│       │   └── handlers.cpp
+│       └── server.cpp
+├── build/                         # CMake build artifacts
+├── CMakeLists.txt
+└── readme.md
 ```
 
 ---
@@ -62,71 +61,62 @@ OnlineBankingSystem/
 
 1. **Install PostgreSQL**:
 
-   ```bash
-   brew install postgresql
-   brew services start postgresql
-   ```
+```bash
+brew install postgresql
+brew services start postgresql
+```
 
 2. **Create Database**:
 
-   ```bash
-   createdb bankapp
-   ```
+```bash
+createdb bankapp
+```
 
 3. **Set Up Schema**:
 
-   ```bash
-   psql -d bankapp -f BankBackend/schema.sql
-   ```
+```bash
+psql -d bankapp -f BankBackend/schema.sql
+```
 
-   This will create the required tables:
+This will create the required tables:
 
-   - `users (id SERIAL PRIMARY KEY, name TEXT, balance REAL)`
-   - `transactions (id SERIAL, user_id INTEGER, type TEXT, amount REAL, timestamp TIMESTAMP)`
+- `users (id SERIAL PRIMARY KEY, name TEXT, balance REAL)`
+- `transactions (id SERIAL, user_id INTEGER, type TEXT, amount REAL, timestamp TIMESTAMP)`
 
 ---
 
 ## Building the Project
 
-Navigate to the `BankBackend/` directory:
+Navigate to the project root and run:
 
 ```bash
-cd BankBackend
-make
+cmake -Bbuild
+cmake --build build
 ```
-
-This will compile the main backend program using the specified source files.
 
 To clean:
 
 ```bash
-make clean
+rm -rf build/
 ```
+
+---
+
+## Running the Server
+
+Once built, run the server:
+
+```bash
+./build/server
+```
+
+Server will be available at: `http://localhost:8080`
 
 ---
 
 ## Running Tests
 
-Each test is compiled independently. For example:
-
-```bash
-make create_user_test
-./create_user_test
-```
-
-Other targets:
-
-```bash
-make deposit_test
-make withdraw_test
-make get_transactions_test
-```
-
-To run all:
-
-```bash
-make all_tests
-```
+Each test is compiled independently (to be re-integrated as part of future work).
 
 ---
 
@@ -157,27 +147,27 @@ Exit psql:
 
 ### User
 
-Defined in `user.hpp`. Represents a bank user with:
+Stored in the `users` table. Each user has:
 
-- ID
-- Name
-- Balance
+- ID (Primary Key)
+- Name (Text)
+- Balance (Real number)
 
 ### Transaction
 
-Defined in `transaction.hpp`. Represents:
+Stored in the `transactions` table. Each transaction includes:
 
-- ID
-- User ID (foreign key)
-- Type (deposit/withdrawal)
-- Amount
-- Timestamp
+- ID (Primary Key)
+- User ID (Foreign Key)
+- Type (`deposit` or `withdrawal`)
+- Amount (Real number)
+- Timestamp (auto-generated)
 
 ---
 
-## Makefile Usage
+## Makefile Usage (Deprecated in favor of CMake)
 
-Sample rules in `Makefile`:
+Sample legacy rule:
 
 ```makefile
 create_user_test:
@@ -186,42 +176,39 @@ create_user_test:
 	  -o create_user_test $(shell pkg-config --libs libpqxx)
 ```
 
-Run with:
-
-```bash
-make create_user_test
-```
-
 ---
 
 ## Dependencies
 
 Ensure the following are installed:
 
-- **g++** (C++17 support)
-- **PostgreSQL** (>= 13)
-- **libpqxx** (C++ client for PostgreSQL)
-- **pkg-config** (for flag resolution)
+- **g++** with C++17 support
+- **PostgreSQL** (v13 or higher)
+- **libpqxx** (C++ PostgreSQL client)
+- **Boost (Beast, Asio)**
+- **pkg-config** (used by CMake)
 
-Install on macOS:
+Install dependencies on macOS:
 
 ```bash
-brew install libpqxx
+brew install boost libpqxx pkg-config cmake
 ```
 
 ---
 
 ## Future Improvements
 
-- Add authentication with hashed passwords
-- Extend transactions to support transfers
-- Build a REST API with C++ (e.g., using Pistache or Crow)
-- Add multi-threaded request handling
-- Containerize with Docker
+- ✅ Refactor to use Boost.Beast HTTP server
+- 🧠 Add support for dynamic JSON body parsing
+- 🔒 Add authentication with hashed passwords
+- 🔁 Support account-to-account transfers
+- 🌐 Build full REST API
+- 🧪 Reintroduce & expand testing framework
+- 🐳 Containerize with Docker
 
 ---
 
 ## License
 
-
+This project is open source and available under the MIT License.
 
