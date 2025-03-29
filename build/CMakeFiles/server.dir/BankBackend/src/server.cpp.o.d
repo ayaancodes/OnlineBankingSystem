@@ -1,5 +1,5 @@
 CMakeFiles/server.dir/BankBackend/src/server.cpp.o: \
-  /Users/ayaanmunshi/Desktop/Year\ 3/Semester\ 2/SE\ 3313/OnlineBankingSystem/BankBackend/src/server.cpp \
+  /Users/ayaanmunshi/Desktop/Year\ 3/Semester\ 2/SE\ 3313/onlinebankingsystem/BankBackend/src/server.cpp \
   /opt/homebrew/include/boost/beast/core.hpp \
   /opt/homebrew/include/boost/beast/core/detail/config.hpp \
   /opt/homebrew/include/boost/config.hpp \
@@ -1903,4 +1903,4 @@ CMakeFiles/server.dir/BankBackend/src/server.cpp.o: \
   /opt/homebrew/include/boost/beast/version.hpp \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/include/c++/v1/iostream \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/include/c++/v1/thread \
-  /Users/ayaanmunshi/Desktop/Year\ 3/Semester\ 2/SE\ 3313/OnlineBankingSystem/BankBackend/src/../include/routes/handlers.hpp
+  /Users/ayaanmunshi/Desktop/Year\ 3/Semester\ 2/SE\ 3313/onlinebankingsystem/BankBackend/src/../include/routes/handlers.hpp

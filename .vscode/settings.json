@@ -63,6 +63,12 @@
         "algorithm": "cpp",
         "*.ipp": "cpp",
         "thread": "cpp",
-        "text_encoding": "cpp"
+        "text_encoding": "cpp",
+        "__tree": "cpp",
+        "map": "cpp",
+        "set": "cpp",
+        "unordered_set": "cpp",
+        "__string": "cpp",
+        "*.tcc": "cpp"
     }
 }

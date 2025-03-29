@@ -4,7 +4,7 @@
 # compile CXX with /Library/Developer/CommandLineTools/usr/bin/c++
 CXX_DEFINES = -DBOOST_SYSTEM_DYN_LINK -DBOOST_SYSTEM_NO_LIB -DBOOST_THREAD_DYN_LINK -DBOOST_THREAD_NO_LIB
 
-CXX_INCLUDES = -I/opt/homebrew/Cellar/libpqxx/7.10.0/include -I"/Users/ayaanmunshi/Desktop/Year 3/Semester 2/SE 3313/OnlineBankingSystem/BankBackend/include" -isystem /opt/homebrew/include
+CXX_INCLUDES = -I/opt/homebrew/Cellar/libpqxx/7.10.0/include -I"/Users/ayaanmunshi/Desktop/Year 3/Semester 2/SE 3313/onlinebankingsystem/BankBackend/include" -isystem /opt/homebrew/include
 
 CXX_FLAGSarm64 = -std=gnu++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk
 

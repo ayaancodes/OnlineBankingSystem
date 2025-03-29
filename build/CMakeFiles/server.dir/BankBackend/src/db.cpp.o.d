@@ -1,6 +1,6 @@
 CMakeFiles/server.dir/BankBackend/src/db.cpp.o: \
-  /Users/ayaanmunshi/Desktop/Year\ 3/Semester\ 2/SE\ 3313/OnlineBankingSystem/BankBackend/src/db.cpp \
-  /Users/ayaanmunshi/Desktop/Year\ 3/Semester\ 2/SE\ 3313/OnlineBankingSystem/BankBackend/src/../include/db.hpp \
+  /Users/ayaanmunshi/Desktop/Year\ 3/Semester\ 2/SE\ 3313/onlinebankingsystem/BankBackend/src/db.cpp \
+  /Users/ayaanmunshi/Desktop/Year\ 3/Semester\ 2/SE\ 3313/onlinebankingsystem/BankBackend/src/../include/db.hpp \
   /opt/homebrew/Cellar/libpqxx/7.10.0/include/pqxx/pqxx \
   /opt/homebrew/Cellar/libpqxx/7.10.0/include/pqxx/internal/header-pre.hxx \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/include/c++/v1/version \
@@ -926,5 +926,5 @@ CMakeFiles/server.dir/BankBackend/src/db.cpp.o: \
   /opt/homebrew/Cellar/libpqxx/7.10.0/include/pqxx/time.hxx \
   /opt/homebrew/Cellar/libpqxx/7.10.0/include/pqxx/transactor.hxx \
   /opt/homebrew/Cellar/libpqxx/7.10.0/include/pqxx/internal/header-post.hxx \
-  /Users/ayaanmunshi/Desktop/Year\ 3/Semester\ 2/SE\ 3313/OnlineBankingSystem/BankBackend/include/../src/models/transaction.hpp \
+  /Users/ayaanmunshi/Desktop/Year\ 3/Semester\ 2/SE\ 3313/onlinebankingsystem/BankBackend/include/../src/models/transaction.hpp \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/include/c++/v1/iostream
