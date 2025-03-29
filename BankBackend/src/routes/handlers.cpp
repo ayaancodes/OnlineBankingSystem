@@ -175,6 +175,63 @@ void handle_request(const http::request<http::string_body> &req,
         res.set(http::field::content_type, "application/json");
         res.body() = jsonArray.dump();
     }
+    // Register Endpoint
+    else if (req.method() == http::verb::post && target.find("/register") != std::string::npos)
+    {
+        try
+        {
+            json body = json::parse(req.body());
+            std::string name = body.at("name").get<std::string>();
+            std::string password = body.at("password").get<std::string>();
+            double balance = body.value("initialBalance", 0.0);
+
+            bool success = db.registerUser(name, password, balance);
+            json resBody = {
+                {"status", success ? "success" : "fail"},
+                {"message", success ? "User registered" : "Registration failed"}};
+
+            res.result(success ? http::status::ok : http::status::bad_request);
+            res.set(http::field::content_type, "application/json");
+            res.body() = resBody.dump();
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << "JSON Parse Error (register): " << e.what() << std::endl;
+            res.result(http::status::bad_request);
+            res.body() = "Invalid JSON payload for registration";
+        }
+    }
+    // Login Endpoint
+    else if (req.method() == http::verb::post && target.find("/login") != std::string::npos)
+    {
+        try
+        {
+            json body = json::parse(req.body());
+            std::string name = body.at("name").get<std::string>();
+            std::string password = body.at("password").get<std::string>();
+
+            int userId = db.loginUser(name, password);
+            json resBody;
+            if (userId != -1)
+            {
+                resBody = {{"status", "success"}, {"userId", userId}};
+                res.result(http::status::ok);
+            }
+            else
+            {
+                resBody = {{"status", "fail"}, {"message", "Invalid credentials"}};
+                res.result(http::status::unauthorized);
+            }
+            res.set(http::field::content_type, "application/json");
+            res.body() = resBody.dump();
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << "JSON Parse Error (login): " << e.what() << std::endl;
+            res.result(http::status::bad_request);
+            res.body() = "Invalid JSON payload for login";
+        }
+    }
     else if (req.method() == http::verb::post && target.find("/createUser") != std::string::npos)
     {
         try

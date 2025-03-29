@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 #include "../src/models/transaction.hpp" 
+// bool registerUser(const std::string &name, const std::string &password, double initialBalance);
+// int loginUser(const std::string &name, const std::string &password);
 
 class DB {
 private:
@@ -32,9 +34,13 @@ public:
     // 5) Transfer money between two suers atomically
     bool transfer(int senderId, int receiverId, double amount);
 
+    //6) Register functionality
+    bool registerUser(const std::string &name, const std::string &password, double initialBalance);
 
-    // 5) (Optional) Transaction history
-    // We'll store data in a struct or just return text for now
+    //7) Login functionality
+    int loginUser(const std::string &name, const std::string &password);
+
+
 std::vector<Transaction> getTransactions(int userId);
 };
 

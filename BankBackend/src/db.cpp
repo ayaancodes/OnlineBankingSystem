@@ -182,3 +182,33 @@ std::vector<Transaction> DB::getTransactions(int userId) {
 
     return transactions;
 }
+
+// 6) Register User DB Functionality
+bool DB::registerUser(const std::string &name, const std::string &password, double initialBalance) {
+    if (!isConnected()) return false;
+    try {
+        pqxx::work txn(*conn);
+        txn.exec_params("INSERT INTO users (name, password, balance) VALUES ($1, $2, $3)",
+                        name, password, initialBalance);
+        txn.commit();
+        return true;
+    } catch (const std::exception &e) {
+        std::cerr << "❌ registerUser Error: " << e.what() << std::endl;
+        return false;
+    }
+}
+
+//DB Functionality to check login feature
+int DB::loginUser(const std::string &name, const std::string &password) {
+    if (!isConnected()) return -1;
+    try {
+        pqxx::work txn(*conn);
+        pqxx::result r = txn.exec_params("SELECT id FROM users WHERE name = $1 AND password = $2",
+                                         name, password);
+        if (r.empty()) return -1; // Login failed
+        return r[0][0].as<int>();
+    } catch (const std::exception &e) {
+        std::cerr << "❌ loginUser Error: " << e.what() << std::endl;
+        return -1;
+    }
+}
