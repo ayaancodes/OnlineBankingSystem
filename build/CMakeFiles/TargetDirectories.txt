@@ -1,3 +1,0 @@
-/Users/ayaanmunshi/Desktop/Year 3/Semester 2/SE 3313/onlinebankingsystem/build/CMakeFiles/server.dir
-/Users/ayaanmunshi/Desktop/Year 3/Semester 2/SE 3313/onlinebankingsystem/build/CMakeFiles/edit_cache.dir
-/Users/ayaanmunshi/Desktop/Year 3/Semester 2/SE 3313/onlinebankingsystem/build/CMakeFiles/rebuild_cache.dir

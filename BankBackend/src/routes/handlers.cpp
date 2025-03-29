@@ -135,6 +135,25 @@ void handle_request(const http::request<http::string_body> &req,
         res.set(http::field::content_type, "application/json");
         res.body() = jsonArray.dump();
     }
+    else if (req.method() == http::verb::post && target.find("/createUser") != std::string::npos)
+    {
+        try
+        {
+            json body = json::parse(req.body());
+            std::string name = body.at("name").get<std::string>();
+            double initialBalance = body.at("initialBalance").get<double>();
+
+            bool success = db.createUser(name, initialBalance);
+            res.result(success ? http::status::ok : http::status::bad_request);
+            res.body() = success ? "User created successfully" : "Failed to create user";
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << "❌ JSON Parse Error (createUser): " << e.what() << std::endl;
+            res.result(http::status::bad_request);
+            res.body() = "Invalid JSON payload for user creation";
+        }
+    }
 
     else
     {
