@@ -6,7 +6,8 @@
         "${workspaceFolder}/**",
         "/opt/homebrew/include",                         // For Boost and libpqxx
         "/opt/homebrew/Cellar/boost/1.87.0_1/include",   // Boost headers (inc. beast)
-        "/opt/homebrew/Cellar/libpqxx/7.10.0/include"    // PostgreSQL C++ connector
+        "/opt/homebrew/Cellar/libpqxx/7.10.0/include",    // PostgreSQL C++ connector
+        "/opt/homebrew/include"
       ],
       "defines": [],
       "macFrameworkPath": [

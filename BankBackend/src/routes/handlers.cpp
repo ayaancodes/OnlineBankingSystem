@@ -1,43 +1,62 @@
 #include "../../include/routes/handlers.hpp"
 #include "../../include/db.hpp"
 #include <sstream>
-#include <iostream> // For logging
+#include <iostream>
+#include <nlohmann/json.hpp>  // JSON library
 
 namespace http = boost::beast::http;
+using json = nlohmann::json;
 
 void handle_request(const http::request<http::string_body>& req,
                     http::response<http::string_body>& res) {
-    // Log the incoming target for debugging
     std::string target(req.target());
     std::cout << "[DEBUG] Received target: " << target << std::endl;
-    
-    // Instantiate DB
+
     DB db;
 
     if (req.method() == http::verb::get && target.find("/balance") != std::string::npos) {
-        int userId = 1;
+        int userId = 1;  // Can be dynamic later if query parsing is added
         double balance = db.getBalance(userId);
         std::stringstream ss;
         ss << "{\"balance\": " << balance << "}";
         res.result(http::status::ok);
         res.set(http::field::content_type, "application/json");
         res.body() = ss.str();
-    } else if (req.method() == http::verb::post && target.find("/deposit") != std::string::npos) {
-        int userId = 1;         // placeholder
-        double amount = 100.0;    // placeholder
-        bool success = db.deposit(userId, amount);
-        res.result(success ? http::status::ok : http::status::bad_request);
-        res.body() = success ? "Deposit successful" : "Deposit failed";
-    } else if (req.method() == http::verb::post && target.find("/withdraw") != std::string::npos) {
-        int userId = 1;         // placeholder
-        double amount = 50.0;    // placeholder
-        bool success = db.withdraw(userId, amount);
-        res.result(success ? http::status::ok : http::status::bad_request);
-        res.body() = success ? "Withdrawal successful" : "Withdrawal failed";
-    } else {
+    } 
+    else if (req.method() == http::verb::post && target.find("/deposit") != std::string::npos) {
+        try {
+            json body = json::parse(req.body());
+            int userId = body.at("userId").get<int>();
+            double amount = body.at("amount").get<double>();
+
+            bool success = db.deposit(userId, amount);
+            res.result(success ? http::status::ok : http::status::bad_request);
+            res.body() = success ? "Deposit successful" : "Deposit failed";
+        } catch (const std::exception& e) {
+            std::cerr << "❌ JSON Parse Error: " << e.what() << std::endl;
+            res.result(http::status::bad_request);
+            res.body() = "Invalid JSON payload";
+        }
+    } 
+    else if (req.method() == http::verb::post && target.find("/withdraw") != std::string::npos) {
+        try {
+            json body = json::parse(req.body());
+            int userId = body.at("userId").get<int>();
+            double amount = body.at("amount").get<double>();
+
+            bool success = db.withdraw(userId, amount);
+            res.result(success ? http::status::ok : http::status::bad_request);
+            res.body() = success ? "Withdrawal successful" : "Withdrawal failed";
+        } catch (const std::exception& e) {
+            std::cerr << "❌ JSON Parse Error: " << e.what() << std::endl;
+            res.result(http::status::bad_request);
+            res.body() = "Invalid JSON payload";
+        }
+    } 
+    else {
         res.result(http::status::not_found);
         res.body() = "Endpoint not found";
     }
-    
+
     res.prepare_payload();
 }
