@@ -25,6 +25,7 @@ void do_session(tcp::socket socket) {
 
 int main() {
     try {
+        std::cerr << "🔥 MAIN() REACHED 🔥\n";
         boost::asio::io_context ioc{1};
         tcp::acceptor acceptor{ioc, {tcp::v4(), 8080}};
 

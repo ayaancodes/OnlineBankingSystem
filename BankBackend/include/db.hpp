@@ -29,6 +29,10 @@ public:
     // 4) Withdraw
     bool withdraw(int userId, double amount);
 
+    // 5) Transfer money between two suers atomically
+    bool transfer(int senderId, int receiverId, double amount);
+
+
     // 5) (Optional) Transaction history
     // We'll store data in a struct or just return text for now
 std::vector<Transaction> getTransactions(int userId);

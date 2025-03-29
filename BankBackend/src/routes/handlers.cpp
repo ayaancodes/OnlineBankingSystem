@@ -68,8 +68,12 @@ void handle_request(const http::request<http::string_body> &req,
             double amount = body.at("amount").get<double>();
 
             bool success = db.deposit(userId, amount);
+            json resBody;
+            resBody["status"] = success ? "success" : "fail";
+            resBody["message"] = success ? "Deposit successful" : "Deposit failed";
             res.result(success ? http::status::ok : http::status::bad_request);
-            res.body() = success ? "Deposit successful" : "Deposit failed";
+            res.set(http::field::content_type, "application/json");
+            res.body() = resBody.dump();
         }
         catch (const std::exception &e)
         {
@@ -87,9 +91,15 @@ void handle_request(const http::request<http::string_body> &req,
             double amount = body.at("amount").get<double>();
 
             bool success = db.withdraw(userId, amount);
+            json resBody;
+            resBody["status"] = success ? "success" : "fail";
+            resBody["message"] = success ? "Withdrawal successful" : "Withdrawal failed";
+
             res.result(success ? http::status::ok : http::status::bad_request);
-            res.body() = success ? "Withdrawal successful" : "Withdrawal failed";
+            res.set(http::field::content_type, "application/json");
+            res.body() = resBody.dump();
         }
+
         catch (const std::exception &e)
         {
             std::cerr << "JSON Parse Error: " << e.what() << std::endl;
@@ -97,6 +107,36 @@ void handle_request(const http::request<http::string_body> &req,
             res.body() = "Invalid JSON payload";
         }
     }
+    // ---------- TRANSFER ----------
+    else if (req.method() == http::verb::post && (target == "/transfer" || target.find("/transfer") != std::string::npos))
+    {
+        std::cerr << "[DEBUG] Hit /transfer endpoint\n";
+        std::cerr << "[DEBUG] Raw body: " << req.body() << std::endl;
+
+        try
+        {
+            json body = json::parse(req.body());
+            int senderId = body.at("senderId").get<int>();
+            int receiverId = body.at("receiverId").get<int>();
+            double amount = body.at("amount").get<double>();
+
+            bool success = db.transfer(senderId, receiverId, amount);
+            json resBody;
+            resBody["status"] = success ? "success" : "fail";
+            resBody["message"] = success ? "Transfer successful" : "Transfer failed";
+
+            res.result(success ? http::status::ok : http::status::bad_request);
+            res.set(http::field::content_type, "application/json");
+            res.body() = resBody.dump();
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << "JSON Parse Error (transfer): " << e.what() << std::endl;
+            res.result(http::status::bad_request);
+            res.body() = "Invalid JSON payload";
+        }
+    }
+
     else if (req.method() == http::verb::get && target.find("/transactions") != std::string::npos)
     {
         std::string fullTarget = std::string(req.target());
@@ -142,14 +182,18 @@ void handle_request(const http::request<http::string_body> &req,
             json body = json::parse(req.body());
             std::string name = body.at("name").get<std::string>();
             double initialBalance = body.at("initialBalance").get<double>();
-
             bool success = db.createUser(name, initialBalance);
+            json resBody;
+            resBody["status"] = success ? "success" : "fail";
+            resBody["message"] = success ? "User created successfully" : "Failed to create user";
+
             res.result(success ? http::status::ok : http::status::bad_request);
-            res.body() = success ? "User created successfully" : "Failed to create user";
+            res.set(http::field::content_type, "application/json");
+            res.body() = resBody.dump();
         }
         catch (const std::exception &e)
         {
-            std::cerr << "❌ JSON Parse Error (createUser): " << e.what() << std::endl;
+            std::cerr << "JSON Parse Error (createUser): " << e.what() << std::endl;
             res.result(http::status::bad_request);
             res.body() = "Invalid JSON payload for user creation";
         }
@@ -157,9 +201,82 @@ void handle_request(const http::request<http::string_body> &req,
 
     else
     {
+        std::cerr << "[DEBUG] No matching endpoint for: " << target << std::endl;
         res.result(http::status::not_found);
         res.body() = "Endpoint not found";
     }
 
     res.prepare_payload();
+}
+
+bool DB::transfer(int senderId, int receiverId, double amount)
+{
+    if (!isConnected())
+    {
+        std::cerr << "[ERROR] Not connected to DB.\n";
+        return false;
+    }
+    if (amount <= 0)
+    {
+        std::cerr << "[ERROR] Invalid transfer amount: " << amount << std::endl;
+        return false;
+    }
+
+    try
+    {
+        pqxx::work txn(*conn);
+
+        // Check sender balance
+        pqxx::result senderRes = txn.exec_params(
+            "SELECT balance FROM users WHERE id = $1", senderId);
+        if (senderRes.empty())
+        {
+            std::cerr << "[ERROR] Sender does not exist.\n";
+            return false;
+        }
+
+        double senderBalance = senderRes[0][0].as<double>();
+        std::cerr << "[DEBUG] Sender balance: " << senderBalance << std::endl;
+
+        if (senderBalance < amount)
+        {
+            std::cerr << "[ERROR] Insufficient funds: trying to send " << amount << ", but only " << senderBalance << " available.\n";
+            return false;
+        }
+
+        // Check if receiver exists
+        pqxx::result receiverRes = txn.exec_params(
+            "SELECT id FROM users WHERE id = $1", receiverId);
+        if (receiverRes.empty())
+        {
+            std::cerr << "[ERROR] Receiver does not exist.\n";
+            return false;
+        }
+
+        // Perform transfer
+        txn.exec_params(
+            "UPDATE users SET balance = balance - $1 WHERE id = $2",
+            amount, senderId);
+        txn.exec_params(
+            "UPDATE users SET balance = balance + $1 WHERE id = $2",
+            amount, receiverId);
+
+        // Log transactions
+        txn.exec_params(
+            "INSERT INTO transactions (user_id, amount, type) VALUES ($1, $2, 'transfer_sent')",
+            senderId, amount);
+        txn.exec_params(
+            "INSERT INTO transactions (user_id, amount, type) VALUES ($1, $2, 'transfer_received')",
+            receiverId, amount);
+
+        txn.commit();
+
+        std::cerr << "[INFO] Transfer of $" << amount << " from User " << senderId << " to User " << receiverId << " complete.\n";
+        return true;
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << "[ERROR] Transfer Exception: " << e.what() << std::endl;
+        return false;
+    }
 }
