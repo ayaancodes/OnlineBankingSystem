@@ -5,12 +5,13 @@
 #include <string>
 #include <vector>
 #include "../src/models/transaction.hpp" 
-// bool registerUser(const std::string &name, const std::string &password, double initialBalance);
-// int loginUser(const std::string &name, const std::string &password);
+#include <mutex>
+
 
 class DB {
 private:
     pqxx::connection* conn;
+    std::mutex dbMutex;  // protects the connection
 
 public:
     DB();

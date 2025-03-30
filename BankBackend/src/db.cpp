@@ -34,6 +34,8 @@ pqxx::connection* DB::getConn() {
 // 1) Create a new user in 'users' table
 bool DB::createUser(const std::string &name, double initialBalance) {
     if (!isConnected()) return false;
+    
+    std::lock_guard<std::mutex> lock(dbMutex);  
 
     try {
         pqxx::work txn(*conn);
@@ -52,7 +54,7 @@ bool DB::createUser(const std::string &name, double initialBalance) {
 // 2) Get a user's current balance
 double DB::getBalance(int userId) {
     if (!isConnected()) return -1.0;
-
+    std::lock_guard<std::mutex> lock(dbMutex);  
     try {
         pqxx::work txn(*conn);
         pqxx::result r = txn.exec_params(
@@ -82,6 +84,7 @@ bool DB::deposit(int userId, double amount) {
         std::cerr << "⚠️ Deposit amount must be > 0\n";
         return false;
     }
+    std::lock_guard<std::mutex> lock(dbMutex);  
 
     try {
         pqxx::work txn(*conn);
@@ -114,6 +117,7 @@ bool DB::withdraw(int userId, double amount) {
         return false;
     }
 
+    std::lock_guard<std::mutex> lock(dbMutex);  
     try {
         pqxx::work txn(*conn);
 
@@ -157,6 +161,7 @@ std::vector<Transaction> DB::getTransactions(int userId) {
     std::vector<Transaction> transactions;
     if (!isConnected()) return transactions;
 
+    std::lock_guard<std::mutex> lock(dbMutex);  
     try {
         pqxx::work txn(*conn);
         pqxx::result r = txn.exec_params(
@@ -186,6 +191,7 @@ std::vector<Transaction> DB::getTransactions(int userId) {
 // 6) Register User DB Functionality
 bool DB::registerUser(const std::string &name, const std::string &password, double initialBalance) {
     if (!isConnected()) return false;
+    std::lock_guard<std::mutex> lock(dbMutex);  
     try {
         pqxx::work txn(*conn);
         txn.exec_params("INSERT INTO users (name, password, balance) VALUES ($1, $2, $3)",
@@ -201,6 +207,7 @@ bool DB::registerUser(const std::string &name, const std::string &password, doub
 //DB Functionality to check login feature
 int DB::loginUser(const std::string &name, const std::string &password) {
     if (!isConnected()) return -1;
+    std::lock_guard<std::mutex> lock(dbMutex);  
     try {
         pqxx::work txn(*conn);
         pqxx::result r = txn.exec_params("SELECT id FROM users WHERE name = $1 AND password = $2",
