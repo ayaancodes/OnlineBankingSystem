@@ -1,6 +1,6 @@
 # Online Banking System Backend
 
-This project is a C++ backend for an online banking system that simulates essential banking operations such as user account creation, deposits, withdrawals, and transaction history tracking using PostgreSQL. It emphasizes modular design, transaction safety (ACID), and testability.
+This project is a C++ backend for an online banking system that simulates essential banking operations such as user account creation, deposits, withdrawals, transfers, and transaction history tracking using PostgreSQL. It emphasizes modular design, transaction safety (ACID), and concurrency with thread-safe multithreading using `std::mutex`.
 
 ---
 
@@ -10,25 +10,29 @@ This project is a C++ backend for an online banking system that simulates essent
 2. [Code Structure](#code-structure)
 3. [Database Setup](#database-setup)
 4. [Building the Project](#building-the-project)
-5. [Running Tests](#running-tests)
-6. [Using psql to Interact with the Database](#using-psql-to-interact-with-the-database)
-7. [Model Design](#model-design)
-8. [Makefile Usage](#makefile-usage)
-9. [Dependencies](#dependencies)
-10. [Future Improvements](#future-improvements)
-11. [License](#license)
+5. [Running the Server](#running-the-server)
+6. [Running Tests](#running-tests)
+7. [Interacting with the API (Test Suite)](#interacting-with-the-api-test-suite)
+8. [Using psql](#using-psql)
+9. [Model Design](#model-design)
+10. [Makefile Usage](#makefile-usage)
+11. [Dependencies](#dependencies)
+12. [Future Improvements](#future-improvements)
+13. [License](#license)
 
 ---
 
 ## Overview
 
-The system is written in C++17 and communicates with a PostgreSQL database via the libpqxx library. It supports:
+The system is written in C++17 and communicates with a PostgreSQL database via the `libpqxx` library. It supports:
 
-- Creating new users with balances
-- Performing deposits and withdrawals
-- Logging and retrieving transaction histories
-- Unit testing of each core functionality
-- Running a multithreaded HTTP server on port 8080 using Boost.Beast
+- Creating users
+- Logging in with credentials
+- Depositing and withdrawing funds
+- Transferring funds between accounts
+- Retrieving transaction histories
+- Thread-safe multithreading via `std::thread` and `std::mutex`
+- Serving a RESTful HTTP API via Boost.Beast
 
 ---
 
@@ -50,7 +54,6 @@ OnlineBankingSystem/
 │       ├── routes/
 │       │   └── handlers.cpp
 │       └── server.cpp
-├── build/                         # CMake build artifacts
 ├── CMakeLists.txt
 └── readme.md
 ```
@@ -72,22 +75,20 @@ brew services start postgresql
 createdb bankapp
 ```
 
-3. **Set Up Schema**:
+3. **Apply Schema**:
 
 ```bash
 psql -d bankapp -f BankBackend/schema.sql
 ```
 
-This will create the required tables:
+This creates the following tables:
 
-- `users (id SERIAL PRIMARY KEY, name TEXT, balance REAL)`
-- `transactions (id SERIAL, user_id INTEGER, type TEXT, amount REAL, timestamp TIMESTAMP)`
+- `users (id SERIAL PRIMARY KEY, name TEXT, password TEXT, balance REAL)`
+- `transactions (id SERIAL, user_id INTEGER, type TEXT, amount REAL, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`
 
 ---
 
 ## Building the Project
-
-Navigate to the project root and run:
 
 ```bash
 cmake -Bbuild
@@ -104,39 +105,98 @@ rm -rf build/
 
 ## Running the Server
 
-Once built, run the server:
-
 ```bash
 ./build/server
 ```
 
-Server will be available at: `http://localhost:8080`
+Visit `http://localhost:8080`
 
 ---
 
 ## Running Tests
 
-Each test is compiled independently (to be re-integrated as part of future work).
+Manually test endpoints using the following `curl` requests:
+
+### ✅ Registration
+```bash
+curl -X POST http://localhost:8080/register \
+  -H "Content-Type: application/json" \
+  -d '{"name": "TestUser", "password": "abc123", "initialBalance": 1000}'
+```
+
+### ✅ Login
+```bash
+curl -X POST http://localhost:8080/login \
+  -H "Content-Type: application/json" \
+  -d '{"name": "TestUser", "password": "abc123"}'
+```
+
+### ✅ Deposit
+```bash
+curl -X POST http://localhost:8080/deposit \
+  -H "Content-Type: application/json" \
+  -d '{"userId": 1, "amount": 100}'
+```
+
+### ✅ Withdraw
+```bash
+curl -X POST http://localhost:8080/withdraw \
+  -H "Content-Type: application/json" \
+  -d '{"userId": 1, "amount": 50}'
+```
+
+### ✅ Transfer
+```bash
+curl -X POST http://localhost:8080/transfer \
+  -H "Content-Type: application/json" \
+  -d '{"senderId": 1, "receiverId": 2, "amount": 100}'
+```
+
+### ✅ Get Balance
+```bash
+curl "http://localhost:8080/balance?userId=1"
+```
+
+### ✅ View Transaction History
+```bash
+curl "http://localhost:8080/transactions?userId=1"
+```
 
 ---
 
-## Using psql to Interact with the Database
+## Interacting with the API (Test Suite)
 
-Start psql:
+To simulate **multithreaded operations**, run concurrent curl commands:
 
+```bash
+# Simultaneous Deposits
+curl -X POST http://localhost:8080/deposit -H "Content-Type: application/json" -d '{"userId": 1, "amount": 100}' &
+curl -X POST http://localhost:8080/deposit -H "Content-Type: application/json" -d '{"userId": 1, "amount": 200}' &
+curl -X POST http://localhost:8080/deposit -H "Content-Type: application/json" -d '{"userId": 1, "amount": 300}' &
+
+# Simultaneous Withdrawals
+curl -X POST http://localhost:8080/withdraw -H "Content-Type: application/json" -d '{"userId": 1, "amount": 50}' &
+curl -X POST http://localhost:8080/withdraw -H "Content-Type: application/json" -d '{"userId": 1, "amount": 75}' &
+```
+
+Use `curl http://localhost:8080/balance?userId=1` to confirm expected results.
+
+---
+
+## Using psql
+
+Start:
 ```bash
 psql -d bankapp
 ```
 
-Common queries:
-
+Useful queries:
 ```sql
 SELECT * FROM users;
 SELECT * FROM transactions;
 ```
 
-Exit psql:
-
+Exit:
 ```sql
 \q
 ```
@@ -146,28 +206,23 @@ Exit psql:
 ## Model Design
 
 ### User
-
-Stored in the `users` table. Each user has:
-
-- ID (Primary Key)
-- Name (Text)
-- Balance (Real number)
+- `id SERIAL PRIMARY KEY`
+- `name TEXT`
+- `password TEXT`
+- `balance REAL`
 
 ### Transaction
-
-Stored in the `transactions` table. Each transaction includes:
-
-- ID (Primary Key)
-- User ID (Foreign Key)
-- Type (`deposit` or `withdrawal`)
-- Amount (Real number)
-- Timestamp (auto-generated)
+- `id SERIAL`
+- `user_id INTEGER`
+- `amount REAL`
+- `type TEXT` (`deposit`, `withdrawal`, `transfer_sent`, `transfer_received`)
+- `timestamp TIMESTAMP`
 
 ---
 
-## Makefile Usage (Deprecated in favor of CMake)
+## Makefile Usage (Deprecated)
 
-Sample legacy rule:
+Use CMake instead. Legacy rule:
 
 ```makefile
 create_user_test:
@@ -180,16 +235,15 @@ create_user_test:
 
 ## Dependencies
 
-Ensure the following are installed:
+Ensure:
+- `g++` (C++17)
+- PostgreSQL
+- `libpqxx`
+- Boost (Beast, Asio)
+- `pkg-config`
+- CMake
 
-- **g++** with C++17 support
-- **PostgreSQL** (v13 or higher)
-- **libpqxx** (C++ PostgreSQL client)
-- **Boost (Beast, Asio)**
-- **pkg-config** (used by CMake)
-
-Install dependencies on macOS:
-
+macOS install:
 ```bash
 brew install boost libpqxx pkg-config cmake
 ```
@@ -198,17 +252,14 @@ brew install boost libpqxx pkg-config cmake
 
 ## Future Improvements
 
-- ✅ Refactor to use Boost.Beast HTTP server
-- 🧠 Add support for dynamic JSON body parsing
-- 🔒 Add authentication with hashed passwords
-- 🔁 Support account-to-account transfers
-- 🌐 Build full REST API
-- 🧪 Reintroduce & expand testing framework
-- 🐳 Containerize with Docker
+- ✅ Add multithreading support using `std::thread`
+- ✅ Protect DB calls using `std::mutex`
+- 🔒 Add secure password hashing (optional future)
+- 🧪 Add integration tests
+- 🐳 Dockerize project for easier onboarding
 
 ---
 
-## License
-
-This project is open source and available under the MIT License.
+## Help?
+Ask Ayaan :D
 
