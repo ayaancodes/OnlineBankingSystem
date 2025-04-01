@@ -15,7 +15,7 @@ CREATE TABLE transactions (
   id SERIAL PRIMARY KEY, -- Auto-incrementing transaction ID
   user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE, -- Linked user ID
   amount NUMERIC NOT NULL, -- Transaction amount
-  type TEXT NOT NULL CHECK (type IN ('deposit', 'withdrawal')), -- Type must be deposit or withdrawal
+  type TEXT CHECK (type IN ('deposit', 'withdrawal', 'transfer_sent', 'transfer_received')), -- Abdul
   timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Time the transaction occurred
 );
 
