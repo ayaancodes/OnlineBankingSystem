@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Transfer Funds</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Transfer Funds</h1>
+    <form id="transferForm">
+      <input type="number" id="receiverId" placeholder="Receiver User ID" required />
+      <input type="number" id="transferAmount" placeholder="Amount to transfer" required />
+      <button type="submit">Transfer</button>
+    </form>
+
+    <!-- 🔙 Back to Dashboard -->
+    <button onclick="location.href='dashboard.html'" class="back-button">← Back to Dashboard</button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

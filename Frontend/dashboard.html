@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Welcome to Your Bank</h1>
+  <p>Your balance: <span id="balance">$0.00</span></p>
+
+  <div class="actions">
+    <button onclick="window.location.href='deposit.html'">Deposit</button>
+    <button onclick="window.location.href='withdraw.html'">Withdraw</button>
+    <button onclick="window.location.href='transfer.html'">Transfer</button>
+    <button onclick="window.location.href='transactions.html'">Transactions</button>
+  </div>
+
+  <script>
+    const userId = localStorage.getItem("userId");
+    fetch(`http://localhost:8080/balance?userId=${userId}`)
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("balance").textContent = `$${data.balance.toFixed(2)}`;
+      })
+      .catch(() => alert("Error loading balance"));
+  </script>
+</body>
+</html>

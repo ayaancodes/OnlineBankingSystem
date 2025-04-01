@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Transaction History</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Your Transactions</h1>
+    <div id="transactionsList" class="transactions-box"></div>
+
+    <!-- 🔙 Back to Dashboard -->
+    <button onclick="location.href='dashboard.html'" class="back-button">← Back to Dashboard</button>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const userId = localStorage.getItem("userId");
+      if (!userId) {
+        alert("You must be logged in!");
+        window.location.href = "index.html";
+        return;
+      }
+
+      try {
+        const res = await fetch(`http://localhost:8080/transactions?userId=${userId}`);
+        const transactions = await res.json();
+
+        const list = document.getElementById("transactionsList");
+        list.innerHTML = "";
+
+        if (transactions.length === 0) {
+          list.innerHTML = "<p>No transactions found.</p>";
+        } else {
+          transactions.forEach(tx => {
+            const item = document.createElement("div");
+            item.className = "transaction-item";
+            item.textContent = `#${tx.id} | ${tx.type} | $${tx.amount} | ${tx.timestamp}`;
+            list.appendChild(item);
+          });
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Failed to load transactions.");
+      }
+    });
+  </script>
+</body>
+</html>
