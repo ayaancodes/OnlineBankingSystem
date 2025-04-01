@@ -1,0 +1,3 @@
+/Users/abdulalghefari/Desktop/yr3/sem2/3313/3313Project/OnlineBankingSystem/build/CMakeFiles/server.dir
+/Users/abdulalghefari/Desktop/yr3/sem2/3313/3313Project/OnlineBankingSystem/build/CMakeFiles/edit_cache.dir
+/Users/abdulalghefari/Desktop/yr3/sem2/3313/3313Project/OnlineBankingSystem/build/CMakeFiles/rebuild_cache.dir

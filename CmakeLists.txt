@@ -37,3 +37,10 @@ target_link_libraries(server
     ${Boost_LIBRARIES}
     ${PQXX_LIBRARIES}
 )
+
+# ensures backend can parse json from frontend - Abdul
+find_package(nlohmann_json REQUIRED)
+
+target_link_libraries(server
+    nlohmann_json::nlohmann_json
+)
