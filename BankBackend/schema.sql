@@ -7,6 +7,7 @@ DROP TABLE IF EXISTS users; -- Remove users table if it exists
 CREATE TABLE users (
   id SERIAL PRIMARY KEY, -- Auto-incrementing user ID
   name TEXT NOT NULL, -- User's name
+  password TEXT, -- User's password - Abdul
   balance NUMERIC NOT NULL DEFAULT 0 -- Account balance with default 0
 );
 
