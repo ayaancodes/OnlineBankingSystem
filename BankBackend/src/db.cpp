@@ -23,6 +23,60 @@ DB::~DB() {
     }
 }
 
+// 7) Transfer between users with transaction logging - Abdul
+bool DB::transfer(int senderId, int receiverId, double amount) {
+    if (!isConnected()) {
+        std::cerr << "❌ Not connected to DB.\n";
+        return false;
+    }
+
+    if (amount <= 0) {
+        std::cerr << "⚠️ Invalid transfer amount: " << amount << std::endl;
+        return false;
+    }
+
+    std::lock_guard<std::mutex> lock(dbMutex);  // -Abdul
+
+    try {
+        pqxx::work txn(*conn);
+
+        // 7a) Check sender's balance
+        pqxx::result senderRes = txn.exec_params("SELECT balance FROM users WHERE id = $1", senderId);
+        if (senderRes.empty()) {
+            std::cerr << "❌ Sender not found.\n";
+            return false;
+        }
+        double senderBalance = senderRes[0][0].as<double>();
+        if (senderBalance < amount) {
+            std::cerr << "❌ Insufficient funds for transfer.\n";
+            return false;
+        }
+
+        // 7b) Check receiver exists
+        pqxx::result receiverRes = txn.exec_params("SELECT id FROM users WHERE id = $1", receiverId);
+        if (receiverRes.empty()) {
+            std::cerr << "❌ Receiver not found.\n";
+            return false;
+        }
+
+        // 7c) Perform balance updates
+        txn.exec_params("UPDATE users SET balance = balance - $1 WHERE id = $2", amount, senderId);
+        txn.exec_params("UPDATE users SET balance = balance + $1 WHERE id = $2", amount, receiverId);
+
+        // 7d) Log transactions
+        txn.exec_params("INSERT INTO transactions (user_id, amount, type) VALUES ($1, $2, 'transfer_sent')", senderId, amount);
+        txn.exec_params("INSERT INTO transactions (user_id, amount, type) VALUES ($1, $2, 'transfer_received')", receiverId, amount);
+
+        txn.commit();
+        std::cout << "✅ Transfer of $" << amount << " from user " << senderId << " to " << receiverId << " complete.\n";
+        return true;
+
+    } catch (const std::exception &e) {
+        std::cerr << "❌ Transfer failed: " << e.what() << std::endl;
+        return false;
+    }
+}
+
 bool DB::isConnected() {
     return conn && conn->is_open();
 }

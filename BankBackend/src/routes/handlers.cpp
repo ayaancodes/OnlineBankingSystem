@@ -22,11 +22,22 @@ std::string getQueryParam(const std::string &query, const std::string &key)
 void handle_request(const http::request<http::string_body> &req,
                     http::response<http::string_body> &res)
 {
-
     std::string target(req.target());
     std::cout << "[DEBUG] Received target: " << target << std::endl;
 
     DB db;
+
+    // ✅ Add CORS headers to every response -Abdul
+    res.set(http::field::access_control_allow_origin, "*");
+    res.set(http::field::access_control_allow_methods, "GET, POST, OPTIONS");
+    res.set(http::field::access_control_allow_headers, "Content-Type");
+
+    // ✅ Handle CORS preflight requests -Abdul
+    if (req.method() == http::verb::options) {
+        res.result(http::status::no_content); // 204
+        res.prepare_payload();
+        return;
+    }
 
     if (req.method() == http::verb::get && target.find("/balance") != std::string::npos)
     {
@@ -82,6 +93,7 @@ void handle_request(const http::request<http::string_body> &req,
             res.body() = "Invalid JSON payload";
         }
     }
+
     else if (req.method() == http::verb::post && target.find("/withdraw") != std::string::npos)
     {
         try
@@ -99,7 +111,6 @@ void handle_request(const http::request<http::string_body> &req,
             res.set(http::field::content_type, "application/json");
             res.body() = resBody.dump();
         }
-
         catch (const std::exception &e)
         {
             std::cerr << "JSON Parse Error: " << e.what() << std::endl;
@@ -107,7 +118,7 @@ void handle_request(const http::request<http::string_body> &req,
             res.body() = "Invalid JSON payload";
         }
     }
-    // ---------- TRANSFER ----------
+
     else if (req.method() == http::verb::post && (target == "/transfer" || target.find("/transfer") != std::string::npos))
     {
         std::cerr << "[DEBUG] Hit /transfer endpoint\n";
@@ -175,7 +186,7 @@ void handle_request(const http::request<http::string_body> &req,
         res.set(http::field::content_type, "application/json");
         res.body() = jsonArray.dump();
     }
-    // Register Endpoint
+
     else if (req.method() == http::verb::post && target.find("/register") != std::string::npos)
     {
         try
@@ -201,7 +212,7 @@ void handle_request(const http::request<http::string_body> &req,
             res.body() = "Invalid JSON payload for registration";
         }
     }
-    // Login Endpoint
+
     else if (req.method() == http::verb::post && target.find("/login") != std::string::npos)
     {
         try
@@ -232,6 +243,7 @@ void handle_request(const http::request<http::string_body> &req,
             res.body() = "Invalid JSON payload for login";
         }
     }
+
     else if (req.method() == http::verb::post && target.find("/createUser") != std::string::npos)
     {
         try
@@ -264,76 +276,4 @@ void handle_request(const http::request<http::string_body> &req,
     }
 
     res.prepare_payload();
-}
-
-bool DB::transfer(int senderId, int receiverId, double amount)
-{
-    if (!isConnected())
-    {
-        std::cerr << "[ERROR] Not connected to DB.\n";
-        return false;
-    }
-    if (amount <= 0)
-    {
-        std::cerr << "[ERROR] Invalid transfer amount: " << amount << std::endl;
-        return false;
-    }
-
-    try
-    {
-        pqxx::work txn(*conn);
-
-        // Check sender balance
-        pqxx::result senderRes = txn.exec_params(
-            "SELECT balance FROM users WHERE id = $1", senderId);
-        if (senderRes.empty())
-        {
-            std::cerr << "[ERROR] Sender does not exist.\n";
-            return false;
-        }
-
-        double senderBalance = senderRes[0][0].as<double>();
-        std::cerr << "[DEBUG] Sender balance: " << senderBalance << std::endl;
-
-        if (senderBalance < amount)
-        {
-            std::cerr << "[ERROR] Insufficient funds: trying to send " << amount << ", but only " << senderBalance << " available.\n";
-            return false;
-        }
-
-        // Check if receiver exists
-        pqxx::result receiverRes = txn.exec_params(
-            "SELECT id FROM users WHERE id = $1", receiverId);
-        if (receiverRes.empty())
-        {
-            std::cerr << "[ERROR] Receiver does not exist.\n";
-            return false;
-        }
-
-        // Perform transfer
-        txn.exec_params(
-            "UPDATE users SET balance = balance - $1 WHERE id = $2",
-            amount, senderId);
-        txn.exec_params(
-            "UPDATE users SET balance = balance + $1 WHERE id = $2",
-            amount, receiverId);
-
-        // Log transactions
-        txn.exec_params(
-            "INSERT INTO transactions (user_id, amount, type) VALUES ($1, $2, 'transfer_sent')",
-            senderId, amount);
-        txn.exec_params(
-            "INSERT INTO transactions (user_id, amount, type) VALUES ($1, $2, 'transfer_received')",
-            receiverId, amount);
-
-        txn.commit();
-
-        std::cerr << "[INFO] Transfer of $" << amount << " from User " << senderId << " to User " << receiverId << " complete.\n";
-        return true;
-    }
-    catch (const std::exception &e)
-    {
-        std::cerr << "[ERROR] Transfer Exception: " << e.what() << std::endl;
-        return false;
-    }
 }
