@@ -23,7 +23,7 @@ void do_session(tcp::socket socket)
     }
     catch (const std::exception &e)
     {
-        std::cerr << "❌ Session error: " << e.what() << std::endl;
+        std::cerr << "Session error: " << e.what() << std::endl;
     }
 }
 
@@ -31,11 +31,11 @@ int main()
 {
     try
     {
-        std::cerr << "🔥 MAIN() REACHED 🔥\n";
+        std::cerr << "MAIN() REACHED \n";
         boost::asio::io_context ioc{1};
         tcp::acceptor acceptor{ioc, {tcp::v4(), 8080}};
 
-        std::cout << "🚀 Server running on http://localhost:8080\n";
+        std::cout << "Server running on http://localhost:8080\n";
 
         for (;;)
         {
@@ -48,7 +48,7 @@ int main()
     }
     catch (const std::exception &e)
     {
-        std::cerr << "❌ Server error: " << e.what() << std::endl;
+        std::cerr << "Server error: " << e.what() << std::endl;
         return EXIT_FAILURE;
     }
 }
