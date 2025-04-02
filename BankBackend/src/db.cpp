@@ -6,12 +6,12 @@ DB::DB() {
     try {
         conn = new pqxx::connection("dbname=bankapp user=ayaanmunshi hostaddr=127.0.0.1 port=5432");
         if (conn->is_open()) {
-            std::cout << "✅ Connected to database: " << conn->dbname() << std::endl;
+            std::cout << "Connected to database: " << conn->dbname() << std::endl;
         } else {
-            std::cerr << "❌ Connection failed." << std::endl;
+            std::cerr << "Connection failed." << std::endl;
         }
     } catch (const std::exception &e) {
-        std::cerr << "❌ DB Constructor Error: " << e.what() << std::endl;
+        std::cerr << "DB Constructor Error: " << e.what() << std::endl;
         conn = nullptr;
     }
 }
@@ -46,7 +46,7 @@ bool DB::createUser(const std::string &name, double initialBalance) {
         txn.commit();
         return true;
     } catch (const std::exception &e) {
-        std::cerr << "❌ createUser Error: " << e.what() << std::endl;
+        std::cerr << "createUser Error: " << e.what() << std::endl;
         return false;
     }
 }
@@ -64,7 +64,7 @@ double DB::getBalance(int userId) {
 
         // If user not found
         if (r.empty()) {
-            std::cerr << "⚠️ No user found with id: " << userId << std::endl;
+            std::cerr << "No user found with id: " << userId << std::endl;
             return -1.0;
         }
 
@@ -72,7 +72,7 @@ double DB::getBalance(int userId) {
         txn.commit();
         return balance;
     } catch (const std::exception &e) {
-        std::cerr << "❌ getBalance Error: " << e.what() << std::endl;
+        std::cerr << "getBalance Error: " << e.what() << std::endl;
         return -1.0;
     }
 }
@@ -104,7 +104,7 @@ bool DB::deposit(int userId, double amount) {
         txn.commit();
         return true;
     } catch (const std::exception &e) {
-        std::cerr << "❌ deposit Error: " << e.what() << std::endl;
+        std::cerr << "deposit Error: " << e.what() << std::endl;
         return false;
     }
 }
@@ -127,12 +127,12 @@ bool DB::withdraw(int userId, double amount) {
             userId
         );
         if (r.empty()) {
-            std::cerr << "❌ No user found with id: " << userId << std::endl;
+            std::cerr << "No user found with id: " << userId << std::endl;
             return false;
         }
         double currentBalance = r[0][0].as<double>();
         if (currentBalance < amount) {
-            std::cerr << "❌ Insufficient funds. Current balance: " << currentBalance << std::endl;
+            std::cerr << "Insufficient funds. Current balance: " << currentBalance << std::endl;
             return false;
         }
 
@@ -151,7 +151,7 @@ bool DB::withdraw(int userId, double amount) {
         txn.commit();
         return true;
     } catch (const std::exception &e) {
-        std::cerr << "❌ withdraw Error: " << e.what() << std::endl;
+        std::cerr << "withdraw Error: " << e.what() << std::endl;
         return false;
     }
 }
@@ -182,7 +182,7 @@ std::vector<Transaction> DB::getTransactions(int userId) {
 
         txn.commit();
     } catch (const std::exception &e) {
-        std::cerr << "❌ getTransactions Error: " << e.what() << std::endl;
+        std::cerr << "getTransactions Error: " << e.what() << std::endl;
     }
 
     return transactions;
@@ -199,7 +199,7 @@ bool DB::registerUser(const std::string &name, const std::string &password, doub
         txn.commit();
         return true;
     } catch (const std::exception &e) {
-        std::cerr << "❌ registerUser Error: " << e.what() << std::endl;
+        std::cerr << "registerUser Error: " << e.what() << std::endl;
         return false;
     }
 }
@@ -215,7 +215,7 @@ int DB::loginUser(const std::string &name, const std::string &password) {
         if (r.empty()) return -1; // Login failed
         return r[0][0].as<int>();
     } catch (const std::exception &e) {
-        std::cerr << "❌ loginUser Error: " << e.what() << std::endl;
+        std::cerr << "loginUser Error: " << e.what() << std::endl;
         return -1;
     }
 }
