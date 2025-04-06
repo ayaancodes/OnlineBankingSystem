@@ -44,3 +44,20 @@ find_package(nlohmann_json REQUIRED)
 target_link_libraries(server
     nlohmann_json::nlohmann_json
 )
+
+
+# adding testing for the bankapp
+add_executable(unit_tests
+    tests/unit/db_test.cpp
+    BankBackend/src/db.cpp
+    BankBackend/src/models/transaction.cpp
+)
+
+target_include_directories(unit_tests PRIVATE BankBackend/include)
+target_link_libraries(unit_tests pqxx)
+
+add_custom_target(run_all_tests
+    COMMAND unit_tests
+)
+
+message(STATUS "Unit test target added ✅")

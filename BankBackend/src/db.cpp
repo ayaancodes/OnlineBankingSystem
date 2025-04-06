@@ -16,6 +16,21 @@ DB::DB() {
     }
 }
 
+DB::DB(const std::string& connectionStr) {
+    try {
+        conn = new pqxx::connection(connectionStr);
+        if (conn->is_open()) {
+            std::cout << "✅ Connected to database (custom): " << conn->dbname() << std::endl;
+        } else {
+            std::cerr << "❌ Connection failed.\n";
+        }
+    } catch (const std::exception &e) {
+        std::cerr << "❌ Custom DB Constructor Error: " << e.what() << std::endl;
+        conn = nullptr;
+    }
+}
+
+
 DB::~DB() {
     if (conn) {
         delete conn;

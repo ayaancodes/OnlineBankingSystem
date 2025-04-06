@@ -15,6 +15,7 @@ private:
 
 public:
     DB();
+    DB(const std::string& connectionStr);  // 👈 tests use this
     ~DB();
 
     bool isConnected();
