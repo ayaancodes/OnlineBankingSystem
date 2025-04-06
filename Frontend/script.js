@@ -1,6 +1,57 @@
 const API_BASE = 'http://localhost:8080';
 
 document.addEventListener("DOMContentLoaded", () => {
+
+      // Logout Button
+  const logoutBtn = document.getElementById("logoutBtn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+      localStorage.clear();
+      window.location.href = "index.html";
+    });
+  }
+
+  // Load Recent Transactions
+  const transactionsList = document.getElementById("transactionsList");
+  if (transactionsList) {
+    const userId = localStorage.getItem("userId");
+    if (!userId) return;
+
+    fetch(`${API_BASE}/transactions?userId=${userId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.length === 0) {
+          transactionsList.innerHTML = "<li>No recent transactions.</li>";
+        } else {
+          data.slice(-5).reverse().forEach(tx => {
+            const li = document.createElement("li");
+            li.textContent = `${tx.type} $${tx.amount.toFixed(2)} — ${new Date(tx.timestamp).toLocaleString()}`;
+            transactionsList.appendChild(li);
+          });
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        transactionsList.innerHTML = "<li>Failed to load transactions.</li>";
+      });
+  }
+
+  // -----------  Tab Logic for Login/Register Tabs -------------
+  const tabs = document.querySelectorAll(".tab");
+  const tabContents = document.querySelectorAll(".tab-content");
+
+  tabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      tabs.forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
+
+      tabContents.forEach(content => content.classList.remove("active"));
+      const target = tab.dataset.tab;
+      document.getElementById(target).classList.add("active");
+    });
+  });
+
+  // ----------  Form Elements ----------
   const loginForm = document.getElementById("loginForm");
   const registerForm = document.getElementById("registerForm");
   const depositForm = document.getElementById("depositForm");
@@ -8,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const transferForm = document.getElementById("transferForm");
   const balanceDisplay = document.getElementById("balance");
 
-  // LOGIN
+  // ----------  LOGIN ----------
   if (loginForm) {
     loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -37,7 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // REGISTER
+  // ----------  REGISTER ----------
   if (registerForm) {
     registerForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -61,7 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // DEPOSIT
+  // ----------  DEPOSIT ----------
   if (depositForm) {
     depositForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -84,7 +135,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // WITHDRAW
+  // ----------  WITHDRAW ----------
   if (withdrawForm) {
     withdrawForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -107,7 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // TRANSFER
+  // ----------  TRANSFER ----------
   if (transferForm) {
     transferForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -131,7 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // DISPLAY BALANCE ON DASHBOARD
+  // ----------  DISPLAY BALANCE ----------
   if (balanceDisplay) {
     const userId = localStorage.getItem("userId");
     if (!userId) {

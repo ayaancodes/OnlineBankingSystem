@@ -1,21 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Withdraw Funds</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>Withdraw</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
+  <header>
     <h1>Withdraw Funds</h1>
-    <form id="withdrawForm">
-      <input type="number" id="withdrawAmount" placeholder="Amount to withdraw" required />
-      <button type="submit">Withdraw</button>
-    </form>
+  </header>
 
-    <!-- 🔙 Back to Dashboard -->
-    <button onclick="location.href='dashboard.html'" class="back-button">← Back to Dashboard</button>
+  <nav>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="deposit.html">Deposit</a>
+    <a href="withdraw.html" class="active">Withdraw</a>
+    <a href="transfer.html">Transfer</a>
+    <a href="transactions.html">Transactions</a>
+    <a href="#" id="logout">Logout</a>
+  </nav>
+
+  <div class="container">
+    <form id="withdrawForm">
+      <input type="number" id="withdrawAmount" step="0.01" placeholder="Amount to Withdraw" required>
+      <input type="submit" value="Withdraw">
+    </form>
   </div>
 
   <script src="script.js"></script>

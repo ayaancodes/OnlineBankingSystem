@@ -1,22 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Transfer Funds</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>Transfer</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Transfer Funds</h1>
-    <form id="transferForm">
-      <input type="number" id="receiverId" placeholder="Receiver User ID" required />
-      <input type="number" id="transferAmount" placeholder="Amount to transfer" required />
-      <button type="submit">Transfer</button>
-    </form>
+  <header>
+    <h1>Transfer Money</h1>
+  </header>
 
-    <!-- 🔙 Back to Dashboard -->
-    <button onclick="location.href='dashboard.html'" class="back-button">← Back to Dashboard</button>
+  <nav>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="deposit.html">Deposit</a>
+    <a href="withdraw.html">Withdraw</a>
+    <a href="transfer.html" class="active">Transfer</a>
+    <a href="transactions.html">Transactions</a>
+    <a href="#" id="logout">Logout</a>
+  </nav>
+
+  <div class="container">
+    <form id="transferForm">
+      <input type="number" id="receiverId" placeholder="Receiver ID" required>
+      <input type="number" id="transferAmount" step="0.01" placeholder="Amount to Transfer" required>
+      <input type="submit" value="Transfer">
+    </form>
   </div>
 
   <script src="script.js"></script>

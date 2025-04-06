@@ -1,28 +1,77 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>Dashboard</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Welcome to Your Bank</h1>
-  <p>Your balance: <span id="balance">$0.00</span></p>
+  <header>
+    <h1>Welcome to Your Dashboard</h1>
+    <button class="logout-button" onclick="logout()">Logout</button>
+  </header>
 
-  <div class="actions">
-    <button onclick="window.location.href='deposit.html'">Deposit</button>
-    <button onclick="window.location.href='withdraw.html'">Withdraw</button>
-    <button onclick="window.location.href='transfer.html'">Transfer</button>
-    <button onclick="window.location.href='transactions.html'">Transactions</button>
+  <div class="container">
+    <div class="balance-box">
+      <p><strong>Current Balance:</strong> <span id="balance">$0.00</span></p>
+    </div>
+
+    <div class="dashboard-box">
+      <div class="widget">
+        <h3>Recent Transactions</h3>
+        <div id="recentTransactions">Loading...</div>
+      </div>
+
+      <div class="widget">
+        <h3>Your Credit Score</h3>
+        <p class="credit-score">743</p>
+        <small>Powered by Titan AI™</small>
+      </div>
+
+      <div class="widget" style="background: #fffbe6; border: 1px dashed #f4d03f;">
+        <h3>Special Offer</h3>
+        <p>💳 Get 2% cashback on all Titan purchases this month!</p>
+      </div>
+    </div>
+
+    <nav>
+      <a href="deposit.html">Deposit</a>
+      <a href="withdraw.html">Withdraw</a>
+      <a href="transfer.html">Transfer</a>
+      <a href="transactions.html">View All Transactions</a>
+    </nav>
   </div>
 
   <script>
     const userId = localStorage.getItem("userId");
+    if (!userId) {
+      alert("Please log in again.");
+      window.location.href = "index.html";
+    }
+
+    function logout() {
+      localStorage.removeItem("userId");
+      window.location.href = "index.html";
+    }
+
     fetch(`http://localhost:8080/balance?userId=${userId}`)
       .then(res => res.json())
       .then(data => {
         document.getElementById("balance").textContent = `$${data.balance.toFixed(2)}`;
-      })
-      .catch(() => alert("Error loading balance"));
+      });
+
+    fetch(`http://localhost:8080/transactions?userId=${userId}`)
+      .then(res => res.json())
+      .then(data => {
+        const recentDiv = document.getElementById("recentTransactions");
+        if (!data.length) {
+          recentDiv.innerHTML = "<p>No recent transactions.</p>";
+        } else {
+          recentDiv.innerHTML = data.slice(-4).reverse().map(tx =>
+            `<p>${tx.type} $${tx.amount} — ${new Date(tx.timestamp).toLocaleString()}</p>`
+          ).join('');
+        }
+      });
   </script>
 </body>
 </html>

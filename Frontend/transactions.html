@@ -1,19 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>Transaction History</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Your Transactions</h1>
-    <div id="transactionsList" class="transactions-box"></div>
+  <header>
+    <h1>Transaction History</h1>
+  </header>
 
-    <!-- 🔙 Back to Dashboard -->
-    <button onclick="location.href='dashboard.html'" class="back-button">← Back to Dashboard</button>
+  <nav>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="deposit.html">Deposit</a>
+    <a href="withdraw.html">Withdraw</a>
+    <a href="transfer.html">Transfer</a>
+    <a href="transactions.html" class="active">Transactions</a>
+    <a href="#" id="logout">Logout</a>
+  </nav>
+
+  <div class="container">
+    <div id="transactionsList">
+      <p>Loading your transactions...</p>
+    </div>
   </div>
+
+
+\
+
 
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
