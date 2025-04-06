@@ -17,8 +17,9 @@ This project is a C++ backend for an online banking system that simulates essent
 9. [Model Design](#model-design)
 10. [Makefile Usage](#makefile-usage)
 11. [Dependencies](#dependencies)
-12. [Future Improvements](#future-improvements)
-13. [License](#license)
+12. [Frontend Testing Instructions](#frontend-testing-instructions)
+13. [Future Improvements](#future-improvements)
+14. [License](#license)
 
 ---
 
@@ -55,6 +56,23 @@ OnlineBankingSystem/
 │       │   └── handlers.cpp
 │       └── server.cpp
 ├── CMakeLists.txt
+├── Frontend/
+│   ├── index.html
+│   ├── dashboard.html
+│   ├── deposit.html
+│   ├── withdraw.html
+│   ├── transfer.html
+│   ├── transactions.html
+│   ├── script.js
+│   └── style.css
+├── build/
+├── tests/
+│   ├── unit/
+│   │   └── db_test.cpp
+│   ├── performance/
+│   │   └── performance_test.py
+│   └── functional/
+│       └── api_test.sh
 └── readme.md
 ```
 
@@ -115,52 +133,26 @@ Visit `http://localhost:8080`
 
 ## Running Tests
 
-Manually test endpoints using the following `curl` requests:
+Unit tests use [doctest](https://github.com/doctest/doctest). A separate test database `bankapp_test` is used to avoid interfering with the production database.
 
-### ✅ Registration
+1. Ensure you've created the test DB:
+
 ```bash
-curl -X POST http://localhost:8080/register \
-  -H "Content-Type: application/json" \
-  -d '{"name": "TestUser", "password": "abc123", "initialBalance": 1000}'
+createdb bankapp_test
+psql -d bankapp_test -f BankBackend/schema.sql
 ```
 
-### ✅ Login
+2. Run tests:
+
 ```bash
-curl -X POST http://localhost:8080/login \
-  -H "Content-Type: application/json" \
-  -d '{"name": "TestUser", "password": "abc123"}'
+./build/unit_tests
 ```
 
-### ✅ Deposit
-```bash
-curl -X POST http://localhost:8080/deposit \
-  -H "Content-Type: application/json" \
-  -d '{"userId": 1, "amount": 100}'
-```
-
-### ✅ Withdraw
-```bash
-curl -X POST http://localhost:8080/withdraw \
-  -H "Content-Type: application/json" \
-  -d '{"userId": 1, "amount": 50}'
-```
-
-### ✅ Transfer
-```bash
-curl -X POST http://localhost:8080/transfer \
-  -H "Content-Type: application/json" \
-  -d '{"senderId": 1, "receiverId": 2, "amount": 100}'
-```
-
-### ✅ Get Balance
-```bash
-curl "http://localhost:8080/balance?userId=1"
-```
-
-### ✅ View Transaction History
-```bash
-curl "http://localhost:8080/transactions?userId=1"
-```
+3. You can view output logs and assertions for test cases:
+- Creating users
+- Deposits
+- Withdrawals
+- Transfers between users
 
 ---
 
@@ -227,8 +219,8 @@ Use CMake instead. Legacy rule:
 ```makefile
 create_user_test:
 	g++ -std=c++17 $(shell pkg-config --cflags libpqxx) \
-	  tests/create_user_test.cpp db/db.cpp models/user.cpp models/transaction.cpp \
-	  -o create_user_test $(shell pkg-config --libs libpqxx)
+	tests/create_user_test.cpp db/db.cpp models/user.cpp models/transaction.cpp \
+	-o create_user_test $(shell pkg-config --libs libpqxx)
 ```
 
 ---
@@ -247,6 +239,30 @@ macOS install:
 ```bash
 brew install boost libpqxx pkg-config cmake
 ```
+
+---
+
+## Frontend Testing Instructions
+
+To serve the static frontend:
+
+1. From the root project folder:
+
+```bash
+cd Frontend
+python3 -m http.server 8000
+```
+
+2. Visit `http://localhost:8000/index.html` in your browser.
+
+3. The frontend supports:
+- Registering and logging in users
+- Viewing dashboards and balances
+- Depositing and withdrawing funds
+- Transferring money
+- Viewing transactions
+
+Make sure the backend is running at `localhost:8080` in parallel.
 
 ---
 

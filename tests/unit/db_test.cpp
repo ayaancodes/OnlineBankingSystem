@@ -2,15 +2,23 @@
 #include "../doctest.h"
 #include "../../BankBackend/include/db.hpp"
 
-// Connect to your isolated test DB
+// Connect to test DB
 DB db("dbname=bankapp_test user=ayaanmunshi hostaddr=127.0.0.1 port=5432");
 
+// Create a helper to wipe the DB (you must have added this to DB class!)
+void wipeTestDatabase() {
+    db.executeRaw("DELETE FROM transactions;");
+    db.executeRaw("DELETE FROM users;");
+}
+
 TEST_CASE("Create user and verify initial balance") {
+    wipeTestDatabase();
     bool created = db.createUser("UnitUser1", 1000.0);
     CHECK(created == true);
 }
 
 TEST_CASE("Deposit increases balance correctly") {
+    wipeTestDatabase();
     db.registerUser("DepositUser", "pass123", 500.0);
     int userId = db.loginUser("DepositUser", "pass123");
     REQUIRE(userId > 0);
@@ -23,6 +31,7 @@ TEST_CASE("Deposit increases balance correctly") {
 }
 
 TEST_CASE("Withdraw subtracts correctly") {
+    wipeTestDatabase();
     db.registerUser("WithdrawUser", "pass123", 600.0);
     int userId = db.loginUser("WithdrawUser", "pass123");
     REQUIRE(userId > 0);
@@ -35,6 +44,7 @@ TEST_CASE("Withdraw subtracts correctly") {
 }
 
 TEST_CASE("Transfer between two users works correctly") {
+    wipeTestDatabase();
     db.registerUser("Sender", "pass123", 1000.0);
     db.registerUser("Receiver", "pass456", 200.0);
 

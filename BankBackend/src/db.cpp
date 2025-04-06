@@ -92,6 +92,13 @@ bool DB::transfer(int senderId, int receiverId, double amount) {
     }
 }
 
+void DB::executeRaw(const std::string& query) {
+    pqxx::work txn(*conn);
+    txn.exec(query);
+    txn.commit();
+}
+
+
 bool DB::isConnected() {
     return conn && conn->is_open();
 }

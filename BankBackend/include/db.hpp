@@ -17,6 +17,9 @@ public:
     DB();
     DB(const std::string& connectionStr);  // 👈 tests use this
     ~DB();
+    
+    void executeRaw(const std::string& query);  // Add this
+
 
     bool isConnected();
     pqxx::connection* getConn();
